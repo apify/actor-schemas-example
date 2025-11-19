@@ -6,7 +6,14 @@ import { prepareHtml } from './html.js';
 
 await Actor.init();
 
-const { seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapter } = await Actor.getInput();
+const { seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapterNumber, chapterDescription, chapterMinLengthWords, chapterMaxLengthWords } = await Actor.getInput();
+
+const chapter = {
+    number: chapterNumber, 
+    description: chapterDescription, 
+    minLengthWords: chapterMinLengthWords, 
+    maxLengthWords: chapterMaxLengthWords,
+};
 
 log.info('Generating chapter');
 
@@ -24,6 +31,7 @@ if (chapterText.startsWith('```json')) newChapterText = chapterText.slice(8, -4)
 
 const chapterData = JSON.parse(newChapterText || chapterText);
 await Actor.setValue('chapter.json', chapterData);
+
 log.info('Generated chapter', { name: chapterData.chapterName });
 
 log.info('Generating illustration');

@@ -8,5 +8,6 @@
     "meta": {
         "templateId": "js-empty"
     },
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../Dockerfile",
+    "input": "input_schema.json"
 }

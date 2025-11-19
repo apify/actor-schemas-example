@@ -1,0 +1,59 @@
+{
+    "title": "SlopMaker2025",
+    "description": "This Actor generates chapters for books based on your input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "seriesTitle": {
+            "title": "Series title",
+            "type": "string",
+            "description": "Name of the series",
+            "editor": "textfield"
+        },
+        "seriesDescription": {
+            "title": "Series description",
+            "type": "string",
+            "description": "Description of the series",
+            "editor": "textarea"
+        },
+        "mainCharacterDescription": {
+            "title": "Main character",
+            "type": "string",
+            "description": "Describe the main character",
+            "editor": "textarea"
+        },
+        "additionalCharacters": {
+            "title": "Additional characters",
+            "type": "string",
+            "description": "Describe additional characters appearing in the series",
+            "editor": "textarea"
+        },
+        "chapterNumber": {
+            "title": "Chapter number",
+            "type": "integer",
+            "description": "Which chapter we are currently on",
+            "editor": "number"
+        },
+        "chapterDescription": {
+            "title": "Description of the chapter",
+            "type": "string",
+            "description": "Descripe what should happen in the chapter",
+            "editor": "textarea"
+        },
+        "chapterMinLengthWords": {
+            "title": "Minimum length of the chapter",
+            "type": "integer",
+            "description": "How long the chapter should be at minimum (word count)",
+            "editor": "number",
+            "unit": "words"
+        },
+        "chapterMaxLengthWords": {
+            "title": "Maximum length of the chapter",
+            "type": "integer",
+            "description": "How long the chapter should be at maximum (word count)",
+            "editor": "number",
+            "unit": "words"
+        }
+    },
+    "required": ["seriesTitle", "seriesDescription", "mainCharacterDescription", "additionalCharacters", "chapterNumber", "chapterDescription", "chapterMinLengthWords", "chapterMaxLengthWords"]
+}
