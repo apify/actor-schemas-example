@@ -4,7 +4,8 @@ import express from 'express';
 import { createChat } from './ai.js';
 import { writeNewChapter, writeChapter, updateChapter, writtenChapters } from './chapter.js';
 import { containerUrl } from './consts.js';
-import { updateStatus } from './status.js';
+import { getStatus, chapterHtml } from './live_view.js';
+import { updateStatus, status } from './status.js';
 
 await Actor.init();
 
@@ -35,8 +36,17 @@ if (interactiveMode) {
     const app = express();
     app.use(express.json());
 
-    app.get('/', (req, res) => {
-        res.send({ status: 'ok', message: 'Hello!' });
+    app.get('/', async (req, res) => {
+        const html = await getStatus({ seriesTitle });
+        res.send(html);
+    });
+
+    app.get('/status', async (req, res) => {
+        let chaptersHtml = Object.keys(writtenChapters).sort((a,b) => b > a).map((key) => chapterHtml(writtenChapters[key])).join('\n');
+        res.send({
+            statusMessage: status.message,
+            chapters: chaptersHtml,
+        });
     });
 
     app.post('/', async (req, res) => {

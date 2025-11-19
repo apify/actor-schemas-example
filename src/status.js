@@ -3,6 +3,10 @@ import { Actor } from 'apify';
 import { containerUrl, keyValueStoreUrl } from './consts.js';
 import { convertToHtml } from './html.js';
 
+export const status = {
+    message: '',
+};
+
 function chapterHtml(chapter) {
       return `
         <section>
@@ -31,6 +35,7 @@ function chapterHtml(chapter) {
 }
 
 export async function updateStatus({ seriesTitle, writtenChapters, statusMessage, isFinished }) {
+    status.message = statusMessage;
     let chaptersHtml = Object.keys(writtenChapters).sort((a,b) => b > a).map((key) => chapterHtml(writtenChapters[key])).join('\n');
     const statusPage = `<html>
     <head>

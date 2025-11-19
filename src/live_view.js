@@ -1,11 +1,9 @@
-import { containerUrl, writtenChapters } from './consts.js';
+import { containerUrl } from './consts.js';
+import { writtenChapters } from './chapter.js';
 import { convertToHtml } from './html.js';
+import { status } from './status.js';
 
-export const status = {
-    message: '',
-};
-
-function chapterHtml(chapter) {
+export function chapterHtml(chapter) {
       return `
         <section>
             <header>
@@ -32,7 +30,7 @@ function chapterHtml(chapter) {
     `;
 }
 
-export async function getStatus({ seriesTitle, statusMessage }) {
+export async function getStatus({ seriesTitle }) {
     let chaptersHtml = Object.keys(writtenChapters).sort((a,b) => b > a).map((key) => chapterHtml(writtenChapters[key])).join('\n');
     return `<html>
     <head>
@@ -44,7 +42,7 @@ export async function getStatus({ seriesTitle, statusMessage }) {
             html,body{height:100%}
             body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111827;line-height:1.6;padding:24px;display:flex;justify-content:center}
             .container{width:100%;max-width:var(--maxw)}
-            .status,.api-information{background:var(--card);padding:12px 16px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:12px}
+            .status,.api-information,.download-link{background:var(--card);padding:12px 16px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.05);margin-bottom:12px}
             .status p{margin:0;font-weight:600;color:var(--accent)}
             .api-information a{color:var(--accent);text-decoration:none;word-break:break-all}
             section{background:var(--card);border-radius:12px;padding:0;margin:14px 0;box-shadow:0 6px 18px rgba(15,23,42,0.06);overflow:hidden;border:1px solid rgba(15,23,42,0.04)}
@@ -84,7 +82,7 @@ export async function getStatus({ seriesTitle, statusMessage }) {
             <div class="top-row">
                 <div class="status">
                     <h3>Current status:</h3>
-                    <p>${statusMessage}</p>
+                    <p>${status.message}</p>
                 </div>
                 <div class="auto-refresh-warning" role="region" aria-label="Auto refresh warning">
                     <p>Disable auto-refresh to stop the page from refreshing every 3 seconds.</p>
@@ -97,36 +95,44 @@ export async function getStatus({ seriesTitle, statusMessage }) {
             <div class="api-information">
                 <p>API is available at: <a href="${containerUrl}">${containerUrl}</a></p>
             </div>
+            <!-- Controls inserted under the top row/status area -->
+            <div class="controls" style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+                <button id="refresh-btn" aria-label="Refresh chapters and status" style="background:var(--accent);color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">Refresh</button>
+                <button id="new-chapter-btn" aria-label="Create new chapter" style="background:#10b981;color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">New chapter</button>
+                <div id="last-updated" style="color:var(--muted);font-size:0.9rem">Last updated: never</div>
+            </div>
 
             ${chaptersHtml}
         </div>
         
         <script>
-            (function(){
-                // Select top-level sections inside the container
-                const sections = Array.from(document.querySelectorAll('.container > section'));
+            // Utility: initialize collapsible chapter sections (runs after chapters HTML is injected)
+            function initChapters() {
+                // remove any previously attached handlers by cloning container
+                const container = document.querySelector('.container');
+                if(!container) return;
+
+                const sections = Array.from(container.querySelectorAll('section'));
                 sections.forEach((sec, idx) => {
                     const header = sec.querySelector('header');
-                    // content contains both main and footer so authors note collapses with the section
                     const content = sec.querySelector('.content');
                     const main = sec.querySelector('main');
-                    if(!header || !main) return;
+                    if(!header || !main || !content) return;
 
-                    // Create chevron indicator
-                    const chev = document.createElement('span');
-                    chev.className = 'chev';
-                    chev.setAttribute('aria-hidden','true');
-                    chev.textContent = '▾';
-                    header.appendChild(chev);
+                    // ensure no duplicate chevrons
+                    if(!header.querySelector('.chev')){
+                        const chev = document.createElement('span');
+                        chev.className = 'chev';
+                        chev.setAttribute('aria-hidden','true');
+                        chev.textContent = '▾';
+                        header.appendChild(chev);
+                    }
 
-                    // Accessibility attributes
                     const mainId = 'chapter-main-' + idx;
-                    // associate header with the collapsible content (not only <main>)
                     content.id = mainId;
                     header.setAttribute('role','button');
                     header.setAttribute('tabindex','0');
                     header.setAttribute('aria-controls', mainId);
-                    // Start collapsed by default
                     header.setAttribute('aria-expanded','false');
                     sec.classList.add('collapsed');
 
@@ -139,7 +145,6 @@ export async function getStatus({ seriesTitle, statusMessage }) {
                         const isOpen = header.getAttribute('aria-expanded') === 'true';
                         const willOpen = (typeof shouldClose === 'boolean') ? !shouldClose : !isOpen;
                         if(willOpen){
-                            // open
                             sec.classList.remove('collapsed');
                             header.setAttribute('aria-expanded','true');
                             const sh = content.scrollHeight;
@@ -149,7 +154,6 @@ export async function getStatus({ seriesTitle, statusMessage }) {
                                 content.style.opacity = '1';
                             });
                         } else {
-                            // close
                             header.setAttribute('aria-expanded','false');
                             sec.classList.add('collapsed');
                             const curH = content.scrollHeight;
@@ -169,7 +173,8 @@ export async function getStatus({ seriesTitle, statusMessage }) {
                         }
                     });
                 });
-            })();
+            }
+
             // Auto-refresh warning close handler
             (function(){
                 const warn = document.querySelector('.auto-refresh-warning');
@@ -177,12 +182,112 @@ export async function getStatus({ seriesTitle, statusMessage }) {
                 const btn = warn.querySelector('.auto-refresh-close');
                 if(!btn) return;
                 btn.addEventListener('click', ()=>{
-                    // animate closing
                     warn.classList.add('closing');
-                    // remove after transition
                     setTimeout(()=>{
                         if(warn && warn.parentNode) warn.parentNode.removeChild(warn);
                     }, 350);
+                });
+            })();
+
+            // Fetch status and chapters from /status and update the page
+            async function loadStatus(){
+                const statusP = document.querySelector('.status p');
+                const lastUpdated = document.getElementById('last-updated');
+                const refreshBtn = document.getElementById('refresh-btn');
+
+                if(refreshBtn) refreshBtn.disabled = true;
+                try {
+                    const resp = await fetch('/status', {cache: 'no-store'});
+                    if(!resp.ok) throw new Error('Network response was not ok: ' + resp.status);
+                    const data = await resp.json();
+
+                    if(statusP && typeof data.statusMessage === 'string'){
+                        statusP.textContent = data.statusMessage;
+                    }
+
+                    if(data.chapters && typeof data.chapters === 'string'){
+                        // Replace existing sections container contents with server provided chapters HTML
+                        // Find the first section element parent context and replace all sections inside container
+                        const container = document.querySelector('.container');
+                        if(container){
+                            // Remove existing sections
+                            const existingSections = Array.from(container.querySelectorAll('section'));
+                            existingSections.forEach(s=>s.parentNode && s.parentNode.removeChild(s));
+
+                            // Create a temporary wrapper to parse the chapters HTML
+                            const tmp = document.createElement('div');
+                            tmp.innerHTML = data.chapters;
+                            // Append the nodes (only section elements to keep structure predictable)
+                            const newSections = Array.from(tmp.querySelectorAll('section'));
+                            if(newSections.length){
+                                newSections.forEach(ns => container.appendChild(ns));
+                            } else {
+                                // If the server returned full markup without section tags, append raw HTML
+                                const frag = document.createRange().createContextualFragment(data.chapters);
+                                container.appendChild(frag);
+                            }
+
+                            // Re-initialize chapter behavior
+                            initChapters();
+                        }
+                    }
+
+                    if(lastUpdated) lastUpdated.textContent = 'Last updated: ' + (new Date()).toLocaleString();
+                } catch (err) {
+                    console.error('Failed to load status:', err);
+                    if(statusP) statusP.textContent = 'Error loading status';
+                    if(lastUpdated) lastUpdated.textContent = 'Last updated: error';
+                } finally {
+                    if(refreshBtn) refreshBtn.disabled = false;
+                }
+            }
+
+            // Wire refresh button and initial load
+            (function(){
+                const refreshBtn = document.getElementById('refresh-btn');
+                if(refreshBtn) refreshBtn.addEventListener('click', ()=> loadStatus());
+
+                // Initial load
+                document.addEventListener('DOMContentLoaded', ()=>{
+                    // run initial init for any inline sections present before server response
+                    initChapters();
+                    loadStatus();
+                });
+            })();
+
+            // Wire refresh button and initial load
+            (function(){
+                const refreshBtn = document.getElementById('refresh-btn');
+                if(refreshBtn) refreshBtn.addEventListener('click', ()=> loadStatus());
+
+                const newChapterBtn = document.getElementById('new-chapter-btn');
+                async function createChapter(){
+                    if(!newChapterBtn) return;
+                    newChapterBtn.disabled = true;
+                    const oldText = newChapterBtn.textContent;
+                    newChapterBtn.textContent = 'Creating...';
+                    try {
+                        const resp = await fetch('/', {method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({})});
+                        if(!resp.ok) throw new Error('Create failed: ' + resp.status);
+                        // Optionally read response (ignored here)
+                        // const result = await resp.json();
+                        // Refresh page data
+                        await loadStatus();
+                    } catch (err){
+                        console.error('Failed to create chapter:', err);
+                        alert('Failed to create chapter: ' + err.message);
+                    } finally {
+                        newChapterBtn.disabled = false;
+                        newChapterBtn.textContent = oldText;
+                    }
+                }
+                if(newChapterBtn) newChapterBtn.addEventListener('click', createChapter);
+
+                // Initial load
+                document.addEventListener('DOMContentLoaded', ()=>{
+                    // run initial init for any inline sections present before server response
+                    initChapters();
+                    loadStatus();
                 });
             })();
         </script>
