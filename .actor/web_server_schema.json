@@ -1,0 +1,264 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SlopMaker 2025 API",
+    "description": "API for creation of chapters in your web series.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Server status is OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Hello!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Generate New Chapter",
+        "operationId": "generateNewChapter",
+        "requestBody": {
+          "description": "Parameters for generating a new chapter. Both parameters are optional.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated and returned a new chapter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chapter"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input parameters."
+          }
+        }
+      }
+    },
+    "/chapter/{chapterNumber}": {
+      "parameters": [
+        {
+          "name": "chapterNumber",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "The number of the chapter to operate on."
+        }
+      ],
+      "post": {
+        "summary": "Generate/Re-generate a specific chapter",
+        "operationId": "generateSpecificChapter",
+        "requestBody": {
+          "description": "Parameters for chapter generation, including an optional description and word length limits.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterSpecificGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated and returned the chapter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chapter"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input parameters or chapter number."
+          },
+          "404": {
+            "description": "Chapter number not found."
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a specific chapter",
+        "operationId": "updateChapter",
+        "requestBody": {
+          "description": "Message containing the update details for the chapter.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapterUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated and returned the chapter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chapter"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input body or chapter number."
+          },
+          "404": {
+            "description": "Chapter number not found."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChapterGenerationRequest": {
+        "type": "object",
+        "description": "Request body for generating a new chapter without a specific number.",
+        "properties": {
+          "minLengthWords": {
+            "type": "string",
+            "description": "Minimum length of the chapter body in words.",
+            "example": "1000"
+          },
+          "maxLengthWords": {
+            "type": "string",
+            "description": "Maximum length of the chapter body in words.",
+            "example": "2500"
+          }
+        }
+      },
+      "ChapterSpecificGenerationRequest": {
+        "type": "object",
+        "description": "Request body for generating a specific chapter, potentially including a description.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChapterGenerationRequest"
+          },
+          {
+            "properties": {
+              "chapterDescription": {
+                "type": "string",
+                "description": "A specific description or prompt to guide the chapter generation.",
+                "example": "A thrilling space opera chapter about first contact."
+              }
+            }
+          }
+        ]
+      },
+      "ChapterUpdateRequest": {
+        "type": "object",
+        "description": "Request body for updating a specific chapter.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The message/content of the update.",
+            "example": "Corrected a typo in the main body."
+          }
+        }
+      },
+      "Chapter": {
+        "type": "object",
+        "description": "The full data structure for a chapter returned by the API.",
+        "properties": {
+          "chapterNumber": {
+            "type": "number",
+            "description": "The sequential number of the chapter.",
+            "format": "float",
+            "example": 1.0
+          },
+          "chapterName": {
+            "type": "string",
+            "description": "The title of the chapter.",
+            "example": "The Unfolding of a New Dawn"
+          },
+          "introduction": {
+            "type": "string",
+            "description": "This is written at the beginning of the chapter. It's always a quote from someone/somewhere."
+          },
+          "attribution": {
+            "type": "string",
+            "description": "Source of the quote in the introduction."
+          },
+          "body": {
+            "type": "string",
+            "description": "Main body of the chapter."
+          },
+          "illustration": {
+            "type": "string",
+            "description": "Description which was used to generate the AI illustration."
+          },
+          "note": {
+            "type": "string",
+            "description": "Author's note about the chapter."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Summary of the chapter which can be used to provide context to AI."
+          },
+          "htmlUrl": {
+            "type": "string",
+            "description": "URL of the HTML file with the whole chapter.",
+            "format": "url"
+          },
+          "illustrationUrl": {
+            "type": "string",
+            "description": "URL of the AI generated illustration.",
+            "format": "url"
+          },
+          "draftNumber": {
+            "type": "number",
+            "description": "Version of the chapter in case of multiple iterations.",
+            "format": "float",
+            "example": 3.1
+          }
+        },
+        "required": [
+          "chapterNumber",
+          "chapterName",
+          "introduction",
+          "attribution",
+          "body",
+          "illustration",
+          "note",
+          "summary",
+          "htmlUrl",
+          "illustrationUrl",
+          "draftNumber"
+        ]
+      }
+    }
+  }
+}

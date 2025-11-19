@@ -9,6 +9,7 @@
     "dependencies": {
         "@google/genai": "1.25.0",
         "apify": "3.4.2",
+        "express": "5.1.0",
         "showdown": "2.1.0"
     },
     "scripts": {

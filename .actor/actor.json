@@ -12,5 +12,6 @@
     "input": "input_schema.json",
     "storages": {
         "dataset": "./dataset_schema.json"
-    }
+    },
+    "webServerSchema": "./web_server_schema.json"
 }
