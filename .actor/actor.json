@@ -1,0 +1,12 @@
+{
+    "actorSpecification": 1,
+    "name": "slopmaker-2025",
+    "title": "SlopMaker 2025",
+    "description": "This Actor generates chapters for books based on your input.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "meta": {
+        "templateId": "js-empty"
+    },
+    "dockerfile": "../Dockerfile"
+}
