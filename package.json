@@ -1,0 +1,21 @@
+{
+    "name": "slopmaker-2025",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "This Actor generates chapters for books based on your input.",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "@google/genai": "1.25.0",
+        "apify": "3.4.2",
+        "express": "5.1.0",
+        "showdown": "2.1.0"
+    },
+    "scripts": {
+        "start": "node ./src/main.js",
+        "test": "echo \"Error: oops, the Actor has no tests yet, sad!\" && exit 1"
+    },
+    "author": "Jaroslav Hejlek",
+    "license": "ISC"
+}
