@@ -1,0 +1,21 @@
+{
+    "actorOutputSchemaVersion": 1,
+    "title": "Output of SlopMaker 2025",
+    "properties": { 
+        "finals": {
+            "type": "string",
+            "title": "Final documents and images",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/keys?collection=final"
+        },
+        "draftHistory": {
+            "type": "string",
+            "title": "Chapter draft history",
+            "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+        },   
+        "drafts": {
+            "type": "string",
+            "title": "Draft documents and images",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/keys?collection=draft"
+        }
+    }
+}
