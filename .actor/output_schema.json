@@ -1,0 +1,31 @@
+{
+    "actorOutputSchemaVersion": 1,
+    "title": "Output of SlopMaker 2025",
+    "properties": { 
+        "status": {
+            "type": "string",
+            "title": "Current state of the run",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/status.html"
+        },
+        "interactive": {
+            "type": "string",
+            "title": "Interactive mode",
+            "template": "{{links.containerRunUrl}}"
+        },
+        "finals": {
+            "type": "string",
+            "title": "Final documents and images",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/keys?collection=final"
+        },
+        "draftHistory": {
+            "type": "string",
+            "title": "Chapter draft history",
+            "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+        },   
+        "drafts": {
+            "type": "string",
+            "title": "Draft documents and images",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/keys?collection=draft"
+        }
+    }
+}

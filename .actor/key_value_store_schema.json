@@ -1,0 +1,24 @@
+{
+    "actorKeyValueStoreSchemaVersion": 1,
+    "title": "SlopMaker 2025 Files",
+    "collections": {
+        "final": {
+            "title": "Final chapters",
+            "description": "Final chapter data",
+            "keyPrefix": "final-",
+            "contentTypes": ["text/plain", "application/json", "image/png", "text/html"]
+        },
+        "draft": {
+            "title": "Drafts",
+            "description": "All draft versions of chapters.",
+            "keyPrefix": "draft-",
+            "contentTypes": ["text/plain", "application/json", "image/png", "text/html"]
+        },
+        "communication": {
+            "title": "Communication",
+            "description": "Record of communication between the Actor and Google Gemini. Usefull for debugging",
+            "keyPrefix": "communication-",
+            "contentTypes": ["text/plain"]
+        }
+    }
+}
