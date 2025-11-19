@@ -2,8 +2,9 @@ import { Actor, log } from 'apify';
 import express from 'express';
 
 import { createChat } from './ai.js';
-import { writeNewChapter, writeChapter, updateChapter } from './chapter.js';
+import { writeNewChapter, writeChapter, updateChapter, writtenChapters } from './chapter.js';
 import { containerUrl } from './consts.js';
+import { updateStatus } from './status.js';
 
 await Actor.init();
 
@@ -70,13 +71,18 @@ if (interactiveMode) {
     app.get('/exit', async (req, res) => {
         log.info('Received exit command, stopping interactive mode');
         res.send({ status: 'ok', message: 'Exiting...' });
+        await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Finished`, isFinished: true });
         void Actor.exit();
     })
 
     const port = process.env.ACTOR_WEB_SERVER_PORT;
-    app.listen(port, () => {
+    app.listen(port, async () => {
         log.info('Interactive mode API started', { url: containerUrl });
+        await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Interactive mode started`, isFinished: false });
     });
 }
 
-if (!interactiveMode) await Actor.exit();
+if (!interactiveMode) {
+    await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Finished`, isFinished: true });
+    await Actor.exit();
+}

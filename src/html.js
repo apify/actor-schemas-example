@@ -2,7 +2,7 @@ import showdown from 'showdown';
 
 const converter = new showdown.Converter();
 
-function convertToHtml(markdown) {
+export function convertToHtml(markdown) {
     return converter.makeHtml(markdown);
 };
 

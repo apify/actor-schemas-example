@@ -3,11 +3,13 @@ import { Actor, log } from 'apify';
 import { writeChapterWithAI, updateChapterWithAI, createIllustrationForChapter } from './ai.js';
 import { keyValueStoreUrl } from './consts.js';
 import { prepareHtml } from './html.js';
+import { updateStatus } from './status.js';
 
-const writtenChapters = {};
+export const writtenChapters = {};
 const draftCounts = {};
 
 async function processChapterFromAI(chapterText, chapter, series) {
+    await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Processing chapter ${chapter.number}`, isFinished: false });
     const draftNumber = (draftCounts[chapter.number] ?? 0) + 1;
     const draftChapterFileName = `draft-chapter-${chapter.number.toString().padStart(2, "0")}-${draftNumber.toString().padStart(2, "0")}`;
     const finalChapterFileName = `final-chapter-${chapter.number.toString().padStart(2, "0")}`;
@@ -59,6 +61,8 @@ async function processChapterFromAI(chapterText, chapter, series) {
     writtenChapters[chapter.number] = result;
     draftCounts[chapter.number] = draftNumber;
 
+    await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Finished generating chapter ${chapter.number}`, isFinished: false });
+
     return result;
 }
 
@@ -72,6 +76,7 @@ export async function writeNewChapter(series, { minLengthWords, maxLengthWords }
         };
         log.info('Generating chapter', { number: chapter.number });
 
+        await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Generating ${chapter.number}`, isFinished: false });
         let chapterText = await writeChapterWithAI(chapter, retry);
         return await processChapterFromAI(chapterText, chapter, series);
     } catch (error) {
@@ -93,6 +98,7 @@ export async function writeNewChapter(series, { minLengthWords, maxLengthWords }
 export async function writeChapter(series, chapter, retry = false) {
     try {        
         log.info('Generating chapter', { number: chapter.number });
+        await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Generating ${chapter.number}`, isFinished: false });
 
         let chapterText = await writeChapterWithAI(chapter, retry);
         return await processChapterFromAI(chapterText, chapter, series);
@@ -115,6 +121,7 @@ export async function writeChapter(series, chapter, retry = false) {
 export async function updateChapter(series, chapter, retry = false) {
     try {        
         log.info('Updating chapter', { number: chapter.number });
+        await updateStatus({ seriesTitle: series.seriesTitle, writtenChapters, statusMessage: `Generating ${chapter.number}`, isFinished: false });
 
         let chapterText = await updateChapterWithAI(chapter, retry);
         return await processChapterFromAI(chapterText, chapter, series);
