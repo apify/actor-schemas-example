@@ -1,67 +1,68 @@
 import { Actor, log } from 'apify';
 
-import { writeChapterWithAI, createIllustrationForChapter } from './ai.js';
+import { createChat, writeChapterWithAI, createIllustrationForChapter } from './ai.js';
 import { keyValueStoreUrl } from './consts.js';
 import { prepareHtml } from './html.js';
 
 await Actor.init();
 
-const { seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapterNumber, chapterDescription, chapterMinLengthWords, chapterMaxLengthWords } = await Actor.getInput();
+const { seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapters } = await Actor.getInput();
 
-const chapter = {
-    number: chapterNumber, 
-    description: chapterDescription, 
-    minLengthWords: chapterMinLengthWords, 
-    maxLengthWords: chapterMaxLengthWords,
-};
-
-log.info('Generating chapter');
-
-let chapterText = await writeChapterWithAI({
+await createChat({
     seriesTitle,
     seriesGenre,
     seriesDescription,
     mainCharacterDescription,
-    additionalCharacters,
-    chapter
+    additionalCharacters
 });
 
-let newChapterText = '';
-if (chapterText.startsWith('```json')) newChapterText = chapterText.slice(8, -4);
+for (let i = 0; i < chapters.length; i++) {
+    const chapter = chapters[i]
+    const chapterFileName = `chapter-${chapter.number.toString().padStart(2, "0")}`;
+    
+    log.info('Generating chapter', { number: chapter.number });
 
-const chapterData = JSON.parse(newChapterText || chapterText);
-await Actor.setValue('chapter.json', chapterData);
+    let chapterText = await writeChapterWithAI(chapter);
+    await Actor.setValue(`${chapterFileName}.txt`, chapterText, { contentType: 'text/plain' });
 
-log.info('Generated chapter', { name: chapterData.chapterName });
+    let newChapterText = '';
+    if (chapterText.startsWith('```json')) newChapterText = chapterText.slice(8, -4);
 
-log.info('Generating illustration');
-const imageBuffers = await createIllustrationForChapter({
-    seriesTitle,
-    seriesGenre,
-    seriesDescription,
-    mainCharacterDescription,
-    additionalCharacters,
-    chapterSummary: chapterData.summary,
-    chapterIllustrationDescription: chapterData.illustration
-});
+    const jsonFileName = `${chapterFileName}.json`;
+    const chapterData = JSON.parse(newChapterText || chapterText);
+    await Actor.setValue(jsonFileName, chapterData);
 
-const illustrationFileName = `illustration.png`;
-const buffer = imageBuffers[0];
-await Actor.setValue(illustrationFileName, buffer, { contentType: 'image/png' });
+    log.info('Generated chapter', { name: chapterData.chapterName, url: `${keyValueStoreUrl}/${jsonFileName}` });
 
-log.info(`Generated illustration`, { url: `${keyValueStoreUrl}/${illustrationFileName}` });
+    log.info('Generating illustration');
+    const imageBuffers = await createIllustrationForChapter({
+        seriesTitle,
+        seriesGenre,
+        seriesDescription,
+        mainCharacterDescription,
+        additionalCharacters,
+        chapterSummary: chapterData.summary,
+        chapterIllustrationDescription: chapterData.illustration
+    });
 
-log.info('Generating html');
-const chapterFileName = 'chapter.html';
-const fullChapterHtml = prepareHtml(seriesTitle, chapterData, `${keyValueStoreUrl}/${illustrationFileName}`);
-await Actor.setValue(chapterFileName, fullChapterHtml, { contentType: 'text/html' });
-log.info('Generated html', { url: `${keyValueStoreUrl}/${chapterFileName}`});
+    const illustrationFileName = `${chapterFileName}.png`;
+    const buffer = imageBuffers[0];
+    await Actor.setValue(illustrationFileName, buffer, { contentType: 'image/png' });
 
-await Actor.pushData({
-    chapterNumber: chapter.number,
-    ...chapterData,
-    htmlUrl: `${keyValueStoreUrl}/${chapterFileName}`,
-    illustrationUrl: `${keyValueStoreUrl}/${illustrationFileName}`,
-});
+    log.info(`Generated illustration`, { url: `${keyValueStoreUrl}/${illustrationFileName}` });
+
+    log.info('Generating html');
+    const htmlFileName = `${chapterFileName}.html`;
+    const fullChapterHtml = prepareHtml(seriesTitle, chapterData, `${keyValueStoreUrl}/${illustrationFileName}`);
+    await Actor.setValue(htmlFileName, fullChapterHtml, { contentType: 'text/html' });
+    log.info('Generated html', { url: `${keyValueStoreUrl}/${htmlFileName}`});
+
+    await Actor.pushData({
+        chapterNumber: chapter.number,
+        ...chapterData,
+        htmlUrl: `${keyValueStoreUrl}/${htmlFileName}`,
+        illustrationUrl: `${keyValueStoreUrl}/${illustrationFileName}`,
+    });
+}
 
 await Actor.exit();

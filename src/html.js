@@ -1,8 +1,5 @@
 import showdown from 'showdown';
 
-const keyValueStoreId = process.env.ACTOR_DEFAULT_KEY_VALUE_STORE_ID;
-const keyValueStoreUrl = `https://api.apify.com/v2/key-value-stores/${keyValueStoreId}/records`;
-
 const converter = new showdown.Converter();
 
 function convertToHtml(markdown) {
@@ -23,7 +20,7 @@ export function prepareHtml(seriesTitle, chapter, illustrationFilename) {
                 <hr>
                 ${convertToHtml(chapter.body)}
                 <br />
-                <img src="${keyValueStoreUrl}/${illustrationFilename}" alt="chapter illustration" />
+                <img src="${illustrationFilename}" alt="chapter illustration" />
 
                 <p></p>
                 <p>Authors note:</p>

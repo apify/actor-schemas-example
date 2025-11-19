@@ -28,32 +28,46 @@
             "description": "Describe additional characters appearing in the series",
             "editor": "textarea"
         },
-        "chapterNumber": {
-            "title": "Chapter number",
-            "type": "integer",
-            "description": "Which chapter we are currently on",
-            "editor": "number"
-        },
-        "chapterDescription": {
-            "title": "Description of the chapter",
-            "type": "string",
-            "description": "Descripe what should happen in the chapter",
-            "editor": "textarea"
-        },
-        "chapterMinLengthWords": {
-            "title": "Minimum length of the chapter",
-            "type": "integer",
-            "description": "How long the chapter should be at minimum (word count)",
-            "editor": "number",
-            "unit": "words"
-        },
-        "chapterMaxLengthWords": {
-            "title": "Maximum length of the chapter",
-            "type": "integer",
-            "description": "How long the chapter should be at maximum (word count)",
-            "editor": "number",
-            "unit": "words"
+        "chapters": {
+            "title": "Chapters",
+            "type": "array",
+            "description": "Defines the chapters of the story",
+            "editor": "schemaBased",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "title": "Chapter number",
+                        "type": "integer",
+                        "description": "Which chapter we are currently on",
+                        "editor": "number"
+                    },
+                    "description": {
+                        "title": "Description of the chapter",
+                        "type": "string",
+                        "description": "Descripe what should happen in the chapter",
+                        "editor": "textarea"
+                    },
+                    "minLengthWords": {
+                        "title": "Minimum length of the chapter",
+                        "type": "integer",
+                        "description": "How long the chapter should be at minimum (word count)",
+                        "editor": "number",
+                        "unit": "words"
+                    },
+                    "maxLengthWords": {
+                        "title": "Maximum length of the chapter",
+                        "type": "integer",
+                        "description": "How long the chapter should be at maximum (word count)",
+                        "editor": "number",
+                        "unit": "words"
+                    }
+                },
+                "required": ["number", "description", "minLengthWords", "maxLengthWords"],
+                "additionalProperties": false
+            },
+            "minItems": 1
         }
     },
-    "required": ["seriesTitle", "seriesDescription", "mainCharacterDescription", "additionalCharacters", "chapterNumber", "chapterDescription", "chapterMinLengthWords", "chapterMaxLengthWords"]
+    "required": ["seriesTitle", "seriesDescription", "mainCharacterDescription", "additionalCharacters", "chapters"]
 }

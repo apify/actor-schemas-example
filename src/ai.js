@@ -3,7 +3,9 @@ import { GoogleGenAI } from "@google/genai";
 // The client gets the API key from the environment variable `GEMINI_API_KEY`.
 const ai = new GoogleGenAI({});
 
-export async function writeChapterWithAI({ seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapter }) {
+let chat;
+
+export async function createChat({ seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters }) {
   const systemInstruction = `
     You are an acomplished shadow writer and your role is to provide support to flash out ideas for new chapters in a web series called ${seriesTitle}.
     The series in ${seriesGenre} genre and is about:
@@ -47,19 +49,25 @@ export async function writeChapterWithAI({ seriesTitle, seriesGenre, seriesDescr
     All the texts except for the illustration description and summary should be in a Markdown format.
   `;
 
-  const response = await ai.models.generateContent(
+  chat = await ai.chats.create(
     {
       model: "gemini-2.5-flash",
-      contents: `
-        **Chapter number:** ${chapter.number}
-        **Chapter description:** ${chapter.description}
-        **Chapter length:** ${chapter.minLengthWords} - ${chapter.maxLengthWords}
-      `,
+      history: [],
       config: {
         systemInstruction,
       },
     }
   );
+}
+
+export async function writeChapterWithAI(chapter) {
+  const response = await chat.sendMessage({
+    message: `
+      **Chapter number:** ${chapter.number}
+      **Chapter description:** ${chapter.description}
+      **Chapter length:** ${chapter.minLengthWords} - ${chapter.maxLengthWords}
+    `
+  });
   return response.text;
 }
 
