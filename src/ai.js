@@ -60,15 +60,15 @@ export async function createChat({ seriesTitle, seriesGenre, seriesDescription, 
   );
 }
 
-export async function writeChapterWithAI(chapter) {
+export async function writeChapterWithAI(chapter, retry) {
   const response = await chat.sendMessage({
-    message: `
+    message: `${retry ? 'I could not parse your answer. Send the chapter again, but make sure to create just one chapter and output it in correct format.' : ''}
       **Chapter number:** ${chapter.number}
       **Chapter description:** ${chapter.description}
       **Chapter length:** ${chapter.minLengthWords} - ${chapter.maxLengthWords}
     `
   });
-  return response.text;
+  return response.text.replace(/```json/g, '').split('```')[0];
 }
 
 export async function createIllustrationForChapter({ seriesTitle, seriesGenre, seriesDescription, mainCharacterDescription, additionalCharacters, chapterSummary, chapterIllustrationDescription }) {
