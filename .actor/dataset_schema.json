@@ -1,0 +1,42 @@
+{
+    "actorSpecification": 1,
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "transformation": {
+                "fields": [
+                    "illustrationUrl",
+                    "chapterNumber",
+                    "chapterName",
+                    "summary",
+                    "htmlUrl"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "illustrationUrl": {
+                        "label": "Illustration",
+                        "format": "image"
+                    },
+                    "chapterNumber": {
+                        "label": "Chapter number",
+                        "format": "number"
+                    },
+                    "chapterName": {
+                        "label": "Chapter name",
+                        "format": "text"
+                    },
+                    "summary": {
+                        "label": "Chapter summary",
+                        "format": "text"
+                    },
+                    "htmlUrl": {
+                        "label": "HTML",
+                        "format": "link"
+                    }
+                }
+            }
+        }
+    }
+}
